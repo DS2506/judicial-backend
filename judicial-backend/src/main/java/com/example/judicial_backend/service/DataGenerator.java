@@ -2,13 +2,14 @@ package com.example.judicial_backend.service;
 
 import com.example.judicial_backend.Case;
 import com.example.judicial_backend.CaseRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Random;
 
 @Service
-public class DataGenerator {
+public class DataGenerator implements CommandLineRunner {
 
     private final CaseRepository caseRepository;
     private final PriorityService priorityService;
@@ -21,15 +22,28 @@ public class DataGenerator {
         this.priorityService = priorityService;
     }
 
+    @Override
+    public void run(String... args) {
+
+        // Generate cases if fewer than 200 exist
+        generateCases();
+
+        // Recalculate priority for all existing cases
+        recalculateExistingCases();
+    }
+
     // Generate 200 sample cases
     public void generateCases() {
 
-        // Avoid generating duplicate data
-        if (caseRepository.count() > 0) {
+        // Do not generate again if 200 or more cases already exist
+        if (caseRepository.count() >= 200) {
             return;
         }
 
-        for (int i = 1; i <= 200; i++) {
+        // Generate only enough cases to reach 200
+        long existingCases = caseRepository.count();
+
+        for (int i = (int) existingCases + 1; i <= 200; i++) {
 
             Case c = new Case();
 
@@ -93,7 +107,7 @@ public class DataGenerator {
 
             c.setEvidenceStatus(getRandomEvidenceStatus());
 
-            // Calculate priority
+            // Calculate priority using PriorityService
             priorityService.assignPriority(c);
 
             // Save case
@@ -101,7 +115,18 @@ public class DataGenerator {
         }
     }
 
-    // Random case types
+    // Recalculate priority for all existing cases
+    private void recalculateExistingCases() {
+
+        var cases = caseRepository.findAll();
+
+        for (Case c : cases) {
+            priorityService.assignPriority(c);
+        }
+
+        caseRepository.saveAll(cases);
+    }
+
     private String getRandomCaseType() {
 
         String[] types = {
@@ -120,7 +145,6 @@ public class DataGenerator {
         return types[random.nextInt(types.length)];
     }
 
-    // Random case severity
     private String getRandomSeverity() {
 
         String[] severity = {
@@ -133,7 +157,6 @@ public class DataGenerator {
         return severity[random.nextInt(severity.length)];
     }
 
-    // Random offence severity
     private String getRandomOffenceSeverity() {
 
         String[] severity = {
@@ -146,7 +169,6 @@ public class DataGenerator {
         return severity[random.nextInt(severity.length)];
     }
 
-    // Random medical conditions
     private String getRandomMedicalCondition() {
 
         String[] conditions = {
@@ -167,7 +189,6 @@ public class DataGenerator {
         return conditions[random.nextInt(conditions.length)];
     }
 
-    // Random case stage
     private String getRandomStage() {
 
         String[] stages = {
@@ -183,7 +204,6 @@ public class DataGenerator {
         return stages[random.nextInt(stages.length)];
     }
 
-    // Random delay risk
     private String getRandomDelayRisk() {
 
         String[] risks = {
@@ -197,7 +217,6 @@ public class DataGenerator {
         return risks[random.nextInt(risks.length)];
     }
 
-    // Random evidence status
     private String getRandomEvidenceStatus() {
 
         String[] statuses = {

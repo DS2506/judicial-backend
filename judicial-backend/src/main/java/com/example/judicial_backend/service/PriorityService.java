@@ -64,7 +64,7 @@ public class PriorityService {
         // 14. Current Stage - 5 points
         score += calculateCurrentStage(c.getCurrentStage());
 
-        // 15. Delay Risk / Previous Hearing History - 6 points
+        // 15. Delay Risk - 6 points
         score += calculateDelayRisk(c.getDelayRisk());
 
         // Safety check
@@ -362,7 +362,10 @@ public class PriorityService {
             int victimAge) {
 
         // Vulnerable child
-        if (vulnerableVictim && victimAge > 0 && victimAge < 18) {
+        if (vulnerableVictim
+                && victimAge > 0
+                && victimAge < 18) {
+
             return 8;
         }
 
@@ -656,10 +659,14 @@ public class PriorityService {
     public String getPriorityLevel(int score) {
 
         if (score >= 80) {
-            return "HIGH";
+            return "CRITICAL";
         }
 
         else if (score >= 50) {
+            return "HIGH";
+        }
+
+        else if (score >= 30) {
             return "MEDIUM";
         }
 
